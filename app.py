@@ -35,3 +35,10 @@ else:
     st.write("Datos generados")
     st.dataframe(df)
 
+if df is not None:
+    st.header("Seleccion de variable")
+
+    columna = st.selectbox("Seleccione una columna",df.columns)
+    data = df[columna].dropna()
+
+    
