@@ -1,8 +1,8 @@
 import streamlit as st
 import pandas as pd
 import numpy as np
-import matplotlib.pyplot
-import seaborn as sbs
+import matplotlib.pyplot as plt
+import seaborn as sns
 from scipy.stats import norm 
 
 st.title("Proyecto distribuciones y prueba de hipotesis")
@@ -41,4 +41,16 @@ if df is not None:
     columna = st.selectbox("Seleccione una columna",df.columns)
     data = df[columna].dropna()
 
-    
+    st.header("Visualizacion")
+
+    #Histograma + KDE
+    st.subheader("Histograma y KDE")
+    fig1, ax1 = plt.subplots()
+    sns.histplot(data, kde=True, ax=ax1)
+    st.pyplot(fig1)
+
+    #Boxplot
+    st.subheader("Boxplot")
+    fig2, ax2 = plt.subplots()
+    sns.boxplot(x=data, ax=ax2)
+    st.pyplot(fig2)
