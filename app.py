@@ -54,3 +54,22 @@ if df is not None:
     fig2, ax2 = plt.subplots()
     sns.boxplot(x=data, ax=ax2)
     st.pyplot(fig2)
+
+
+    st.header("Resumen estadistico")
+
+    media = np.mean(data)
+    desviacion = np.std(data)
+
+    st.write(f"Media: {media}")
+    st.write(f"Desviacion estandar: {desviacion}")
+
+    #Analisis del usuario
+    st.header("Analisis del estudiante")
+    
+    respuesta_usuario = st.text_area(
+        "Responde:\n¿La distribución parece normal?\n¿Hay sesgo?\n¿Hay outliers?",
+        height=150
+    )
+    st.write("Posteriormente tu respuesta sera evaluada por la IA")
+
