@@ -144,3 +144,33 @@ if df is not None:
             decision = "NO RECHAZAR H0"
 
         st.success(decision)
+
+        #Interpretación automática
+        st.subheader("Interpretacion automatica")
+        if p_value < alpha:
+            interpretacion = (
+                f"Como p-value ({p_value:.4f}) < α ({alpha}), "
+                "se rechaza H0. Hay evidencia estadistica suficiente"
+                "para apoyar la hipotesis alternativa"
+            )
+        else:
+            interpretacion = (
+                f"Como p-value ({p_value:.4f}) >= α ({alpha}), "
+                "no se rechaza H0. No hay evidencia estadistica suficiente"
+                "para apoyar la hipotesis alternativa"
+            )
+        st.write(interpretacion)
+
+        #Grafica normal + Z
+        st.subheader("Distribución normal y estadistico Z")
+
+        x = np.linspace(-4,4,200)
+        y = norm.pdf(x)
+        
+        fig3,ax3 = plt.subplots()
+        ax3.plot(x,y, label="Distribucion normal")
+
+        ax3.axvline(z, color="red", linestyle="--", label="Z observado")
+        ax3.legend()
+
+        st.pyplot(fig3)
