@@ -4,7 +4,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
 from scipy.stats import norm, skew, kurtosis
-import google.generativeai as genai
+from openai import OpenAI
 
 
 st.set_page_config(
@@ -249,10 +249,10 @@ div.stButton > button:hover { opacity: 0.8; background: var(--accent); }
 </style>
 """, unsafe_allow_html=True)
 
-# Configuración Gemini
-GEMINI_API_KEY = "AIzaSyAKoGajKLzp3EkXiejUAEMSdzhxWgq0fnE"
-genai.configure(api_key=GEMINI_API_KEY)
-gemini_model = genai.GenerativeModel("gemini-2.0-flash")
+# ── Configuración OpenAI ──────────────────────────────────────────────────────
+OPENAI_API_KEY = "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"   # <-- pon aquí tu key
+openai_client = OpenAI(api_key=OPENAI_API_KEY)
+# ─────────────────────────────────────────────────────────────────────────────
 
 #  CHART PALETTE
 C_BG   = "#0b0d12"
@@ -319,7 +319,6 @@ with tab1:
             df_new = pd.read_csv(uploaded)
             st.session_state["df"] = df_new
             st.success(f"Archivo cargado — {df_new.shape[0]} filas, {df_new.shape[1]} columnas")
-            # FIX: mostrar todas las filas en tabla desplazable
             st.dataframe(df_new, use_container_width=True, height=350)
     else:
         st.markdown('<p class="note">Genera una muestra aleatoria con distribucion normal. Define los parametros y presiona el boton para crear los datos.</p>', unsafe_allow_html=True)
@@ -336,7 +335,6 @@ with tab1:
             df_new = pd.DataFrame({"valor": arr})
             st.session_state["df"] = df_new
             st.success(f"Muestra generada — {int(n_sin)} observaciones, Normal(mu={mu_sin}, sigma={sd_sin})")
-            # FIX: mostrar todas las filas en tabla desplazable
             st.dataframe(df_new, use_container_width=True, height=350)
 
     if st.session_state["df"] is not None:
@@ -353,7 +351,6 @@ with tab1:
             if len(data) < 30:
                 st.error("Se necesitan al menos 30 observaciones para la prueba Z.")
             else:
-                # Compute and persist
                 media     = float(np.mean(data))
                 mediana   = float(np.median(data))
                 desv      = float(np.std(data, ddof=1))
@@ -623,14 +620,12 @@ Valores tipicos: 0.01, 0.05, 0.10.
         decision   = "RECHAZAR H0" if p_value < alpha else "NO RECHAZAR H0"
         rechazamos = p_value < alpha
 
-        # Persist
         for k, v in [("z_stat", z_stat), ("p_value", p_value), ("z_crit", z_crit),
                      ("alpha", alpha), ("sigma", sigma), ("h0", h0),
                      ("tipo", tipo), ("decision", decision), ("reg_crit", reg_crit),
                      ("h1_str", h1_str)]:
             st.session_state[k] = v
 
-        # Resultados
         st.markdown('<p class="slabel">Resultados del calculo</p>', unsafe_allow_html=True)
         rc = st.columns(5)
         for col, lb, vl in zip(rc,
@@ -644,7 +639,6 @@ Valores tipicos: 0.01, 0.05, 0.10.
     <div class="slbl">{lb}</div>
 </div>""", unsafe_allow_html=True)
 
-        # ── Decision ──
         st.markdown("<br>", unsafe_allow_html=True)
         vd1, vd2, vd3 = st.columns([1, 2, 1])
         with vd2:
@@ -675,7 +669,6 @@ Valores tipicos: 0.01, 0.05, 0.10.
                 f"Resultado no significativo al {(1-alpha)*100:.0f}% de confianza."
             )
 
-        # ── Normal distribution chart ──
         st.markdown("<div class='hr'></div>", unsafe_allow_html=True)
         st.markdown('<p class="slabel">Distribucion normal con region de rechazo</p>', unsafe_allow_html=True)
         st.markdown('<p class="note">La zona roja es la region de rechazo: si tu estadistico Z cae en ella, rechazamos H0. La zona azul es la region de no rechazo. La linea dorada es tu Z calculado.</p>', unsafe_allow_html=True)
@@ -750,7 +743,6 @@ Valores tipicos: 0.01, 0.05, 0.10.
         ax3.set_ylim(-0.03, 0.47)
         st.pyplot(fig3, use_container_width=True)
 
-        # ── Summary table ──
         st.markdown("<div class='hr'></div>", unsafe_allow_html=True)
         st.markdown('<p class="slabel">Tabla resumen</p>', unsafe_allow_html=True)
         summ = pd.DataFrame({
@@ -768,9 +760,11 @@ Valores tipicos: 0.01, 0.05, 0.10.
         })
         st.dataframe(summ, use_container_width=True, hide_index=True)
 
-#  TAB 4 — ASISTENTE IA
+# ═══════════════════════════════════════════════════════════════════════════════
+#  TAB 4 — ASISTENTE IA  (OpenAI)
+# ═══════════════════════════════════════════════════════════════════════════════
 with tab4:
-    st.markdown('<p class="slabel">Paso 4</p><h2 class="stitle">Asistente de IA — Gemini</h2>', unsafe_allow_html=True)
+    st.markdown('<p class="slabel">Paso 4</p><h2 class="stitle">Asistente de IA — OpenAI</h2>', unsafe_allow_html=True)
 
     if st.session_state["data"] is None:
         st.warning("Primero carga tus datos y completa la prueba Z.")
@@ -832,7 +826,7 @@ with tab4:
             st.markdown('<p class="note">La IA recibe exclusivamente el resumen estadistico y tu analisis. No recibe los datos crudos.</p>', unsafe_allow_html=True)
             st.markdown("<br>", unsafe_allow_html=True)
 
-            if st.button("Consultar a Gemini"):
+            if st.button("Consultar a OpenAI"):
                 analisis_est = (
                     f"Normalidad: {resp_normal} | "
                     f"Sesgo: {resp_sesgo} | "
@@ -874,21 +868,41 @@ TAREA: Responde en espanol, sin emojis, con parrafos bien separados, maximo 320 
 
                 with st.spinner("Procesando respuesta..."):
                     try:
-                        resp_ia = gemini_model.generate_content(prompt)
+                        # ── Llamada a OpenAI ──────────────────────────────
+                        respuesta = openai_client.chat.completions.create(
+                            model="gpt-4o-mini",          # puedes cambiar a gpt-4o si prefieres
+                            max_tokens=600,
+                            temperature=0.4,
+                            messages=[
+                                {
+                                    "role": "system",
+                                    "content": (
+                                        "Eres un profesor universitario de estadistica. "
+                                        "Respondes siempre en espanol, sin emojis, "
+                                        "con lenguaje academico claro y parrafos bien separados."
+                                    ),
+                                },
+                                {"role": "user", "content": prompt},
+                            ],
+                        )
+                        texto_ia = respuesta.choices[0].message.content
+                        # ─────────────────────────────────────────────────
+
                         st.markdown("<div class='hr'></div>", unsafe_allow_html=True)
-                        st.markdown('<p class="slabel">Retroalimentacion de Gemini</p>', unsafe_allow_html=True)
+                        st.markdown('<p class="slabel">Retroalimentacion de OpenAI</p>', unsafe_allow_html=True)
                         st.markdown(f"""
 <div class="card">
     <div style="font-size:0.9rem;line-height:1.85;color:#c2d5ee;">
-        {resp_ia.text.replace(chr(10), "<br>")}
+        {texto_ia.replace(chr(10), "<br>")}
     </div>
 </div>""", unsafe_allow_html=True)
+
                     except Exception as exc:
-                        st.error(f"Error al conectar con la API: {exc}")
+                        st.error(f"Error al conectar con la API de OpenAI: {exc}")
 
     st.markdown("""
 <div class="pgfooter">
     Probabilidad y Estadistica &nbsp;&nbsp;·&nbsp;&nbsp; Ingenieria en Tecnologias de la Informacion<br>
-    Streamlit &nbsp;·&nbsp; Google Gemini 2.0 &nbsp;·&nbsp; SciPy &nbsp;·&nbsp; Seaborn
+    Streamlit &nbsp;·&nbsp; OpenAI GPT-4o-mini &nbsp;·&nbsp; SciPy &nbsp;·&nbsp; Seaborn
 </div>
 """, unsafe_allow_html=True)
