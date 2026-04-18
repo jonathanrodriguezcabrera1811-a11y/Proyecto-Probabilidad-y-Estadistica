@@ -73,3 +73,74 @@ if df is not None:
     )
     st.write("Posteriormente tu respuesta sera evaluada por la IA")
 
+    st.header("Prueba de hipotesis (Z)")
+
+    h0 = st.number_input("Hipótesis nula (μ₀)", value=50.0)
+    h1 = st.text_input("Hipótesis alternativa (ej: μ < 50)")
+    sigma = st.number_input("desviacion estandar", value=10.0)
+    alpha = st.number_input("Nivel de significancia", value=0.05)
+
+    tipo = st.selectbox(
+        "Tipo de prueba",
+        ("Bilateral", "Cola izquierda", "Cola derecha")
+    )
+
+    if "<" in h1:
+        tipo_detectado = "Cola izquierda"
+    elif ">" in h1:
+        tipo_detectado = "Cola derecha"
+    else:
+        tipo_detectado = "Bilateral"
+
+    st.write(f"Tipo detectado por H1: {tipo_detectado}")
+
+    if tipo != tipo_detectado:
+        st.warning("ERROR: El tipo de prueba no coincide con H1")
+
+    # H1 FORMAL
+    if tipo == "Cola izquierda":
+        h1_formal = f"μ < {h0}"
+    elif tipo == "Cola derecha":
+        h1_formal = f"μ > {h0}"
+    else:
+        h1_formal = f"μ ≠ {h0}"
+
+    st.write(f"H1 formal: {h1_formal}")
+
+    n = len(data)
+
+    if n < 30:
+        st.error("Se requiere n ≥ 30")
+    else:
+
+        #Z
+        z = (media - h0) / (sigma / np.sqrt(n))
+
+        #p-value
+        if tipo == "Bilateral":
+            p_value = 2 * (1 - norm.cdf(abs(z)))
+            z_crit = norm.ppf(1 - alpha / 2)
+
+        elif tipo == "Cola derecha":
+            p_value = 1 - norm.cdf(z)
+            z_crit = norm.ppf(1 - alpha)
+
+        else:
+            p_value = norm.cdf(z)
+            z_crit = norm.ppf(alpha)
+
+        #resultados
+        st.subheader("Resultados")
+
+        st.write(f"Z: {z:.4f}")
+        st.write(f"p-value: {p_value:.6f}")
+
+        # =========================
+        # DECISION
+        # =========================
+        if p_value < alpha:
+            decision = "RECHAZAR H0"
+        else:
+            decision = "NO RECHAZAR H0"
+
+        st.success(decision)
