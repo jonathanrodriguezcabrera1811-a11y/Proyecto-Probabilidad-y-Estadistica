@@ -4,7 +4,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
 from scipy.stats import norm, skew, kurtosis
-from openai import OpenAI
+import google.generativeai as genai
 
 
 st.set_page_config(
@@ -39,7 +39,6 @@ html, body, [data-testid="stApp"] {
 #MainMenu, footer, header { visibility: hidden; }
 [data-testid="stDecoration"] { display: none; }
 
-/* ── Header ── */
 .site-header {
     padding: 52px 0 40px;
     text-align: center;
@@ -62,7 +61,6 @@ html, body, [data-testid="stApp"] {
     margin-top: 10px;
 }
 
-/* ── Tabs ── */
 [data-testid="stTabs"] > div:first-child {
     border-bottom: 1px solid var(--border);
     gap: 0;
@@ -87,7 +85,6 @@ button[aria-selected="true"][data-baseweb="tab"] {
 }
 [data-testid="stTabPanel"] { padding-top: 40px; }
 
-/* ── Section label ── */
 .slabel {
     font-family: 'DM Mono', monospace;
     font-size: 0.68rem;
@@ -103,7 +100,6 @@ button[aria-selected="true"][data-baseweb="tab"] {
     margin: 0 0 24px;
 }
 
-/* ── Note bar ── */
 .note {
     border-left: 2px solid var(--accent);
     background: rgba(56,189,248,0.04);
@@ -115,7 +111,6 @@ button[aria-selected="true"][data-baseweb="tab"] {
     line-height: 1.65;
 }
 
-/* ── Stat block ── */
 .sblock {
     background: var(--surf);
     border: 1px solid var(--border);
@@ -138,7 +133,6 @@ button[aria-selected="true"][data-baseweb="tab"] {
     letter-spacing: 0.07em;
 }
 
-/* ── Card ── */
 .card {
     background: var(--surf);
     border: 1px solid var(--border);
@@ -153,7 +147,6 @@ button[aria-selected="true"][data-baseweb="tab"] {
     padding: 18px 20px;
 }
 
-/* ── Verdict banners ── */
 .verdict-r {
     background: rgba(248,113,113,0.07);
     border: 1px solid rgba(248,113,113,0.32);
@@ -193,10 +186,8 @@ button[aria-selected="true"][data-baseweb="tab"] {
     margin-top: 6px;
 }
 
-/* ── Divider ── */
 .hr { border: none; border-top: 1px solid var(--border); margin: 32px 0; }
 
-/* ── Inputs ── */
 .stSelectbox label, .stNumberInput label, .stTextArea label, .stRadio label {
     font-size: 0.78rem !important;
     text-transform: uppercase !important;
@@ -209,7 +200,6 @@ input, textarea, select {
     color: var(--text) !important;
 }
 
-/* ── Button ── */
 div.stButton > button {
     background: var(--accent);
     color: #050c14;
@@ -224,7 +214,6 @@ div.stButton > button {
 }
 div.stButton > button:hover { opacity: 0.8; background: var(--accent); }
 
-/* ── Metrics ── */
 [data-testid="stMetricLabel"] p {
     font-size: 0.7rem !important;
     text-transform: uppercase !important;
@@ -236,7 +225,6 @@ div.stButton > button:hover { opacity: 0.8; background: var(--accent); }
     color: var(--accent) !important;
 }
 
-/* ── Footer ── */
 .pgfooter {
     text-align: center;
     color: var(--muted);
@@ -249,12 +237,11 @@ div.stButton > button:hover { opacity: 0.8; background: var(--accent); }
 </style>
 """, unsafe_allow_html=True)
 
-# ── Configuración OpenAI ──────────────────────────────────────────────────────
-OPENAI_API_KEY = "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"   # <-- pon aquí tu key
-openai_client = OpenAI(api_key=OPENAI_API_KEY)
-# ─────────────────────────────────────────────────────────────────────────────
+# Configuración Gemini
+GEMINI_API_KEY = "AIzaSyDQ5xwJ1fDcv_eusW5np3ABpCAOvVoZAPA"
+genai.configure(api_key=GEMINI_API_KEY)
+gemini_model = genai.GenerativeModel("gemini-2.0-flash")
 
-#  CHART PALETTE
 C_BG   = "#0b0d12"
 C_SURF = "#111520"
 C_GRID = "#1c2438"
@@ -288,7 +275,6 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 
-
 for k in ("df", "data", "col", "media", "mediana", "desv",
           "val_sesgo", "val_kurt", "n", "q1", "q3", "n_out",
           "z_stat", "p_value", "z_crit", "alpha", "sigma",
@@ -299,7 +285,9 @@ for k in ("df", "data", "col", "media", "mediana", "desv",
 
 tab1, tab2, tab3, tab4 = st.tabs(["Datos", "Distribucion", "Prueba Z", "Asistente IA"])
 
+# ─────────────────────────────────────────────
 #  TAB 1 — DATOS
+# ─────────────────────────────────────────────
 with tab1:
     st.markdown('<p class="slabel">Paso 1</p><h2 class="stitle">Carga de datos</h2>', unsafe_allow_html=True)
 
@@ -387,8 +375,9 @@ with tab1:
                 st.info("Datos listos. Navega a las siguientes pestanas para continuar.")
 
 
+# ─────────────────────────────────────────────
 #  TAB 2 — DISTRIBUCION
-
+# ─────────────────────────────────────────────
 with tab2:
     st.markdown('<p class="slabel">Paso 2</p><h2 class="stitle">Visualizacion de la distribucion</h2>', unsafe_allow_html=True)
 
@@ -406,7 +395,6 @@ with tab2:
 
         cg1, cg2 = st.columns(2)
 
-        # ── Histogram + KDE ──
         with cg1:
             st.markdown('<p class="slabel">Histograma y KDE</p>', unsafe_allow_html=True)
             st.markdown('<p class="note">Las barras muestran la frecuencia de cada rango de valores. La curva suavizada estima la forma de la distribucion. Una campana simetrica es caracteristica de la distribucion normal.</p>', unsafe_allow_html=True)
@@ -433,7 +421,6 @@ with tab2:
                        framealpha=0.9, edgecolor=C_GRID)
             st.pyplot(fig1, use_container_width=True)
 
-        # ── Boxplot ──
         with cg2:
             st.markdown('<p class="slabel">Boxplot</p>', unsafe_allow_html=True)
             st.markdown('<p class="note">La caja abarca el 50% central (Q1 a Q3). Los puntos fuera de los bigotes son valores atipicos. Una caja descentrada respecto a la mediana indica asimetria.</p>', unsafe_allow_html=True)
@@ -479,7 +466,6 @@ with tab2:
             else:
                 st.warning(f"{n_out} outlier(s) detectados")
 
-        # ── Analisis estudiante ──
         st.markdown("<div class='hr'></div>", unsafe_allow_html=True)
         st.markdown('<p class="slabel">Tu analisis</p>', unsafe_allow_html=True)
         st.markdown('<p class="note">Responde con base en lo que observas en las graficas. Tu analisis sera evaluado por la IA en la ultima pestana.</p>', unsafe_allow_html=True)
@@ -521,7 +507,10 @@ with tab2:
             st.session_state["resp_texto"]    = texto
             st.success("Analisis guardado. Puedes continuar con la prueba Z.")
 
+
+# ─────────────────────────────────────────────
 #  TAB 3 — PRUEBA Z
+# ─────────────────────────────────────────────
 with tab3:
     st.markdown('<p class="slabel">Paso 3</p><h2 class="stitle">Prueba de hipotesis Z</h2>', unsafe_allow_html=True)
 
@@ -690,7 +679,6 @@ Valores tipicos: 0.01, 0.05, 0.10.
                 ax3.axvline(zc, color=C_RED, lw=1.1, ls="--", alpha=0.65)
                 ax3.text(zc, -0.017, f"Zc={zc:.2f}", ha="center",
                          color=C_RED, fontsize=8, fontfamily="monospace")
-
         elif tipo == "Cola derecha":
             xr = xs[xs >= z_crit]
             xl = xs[xs < z_crit]
@@ -760,11 +748,120 @@ Valores tipicos: 0.01, 0.05, 0.10.
         })
         st.dataframe(summ, use_container_width=True, hide_index=True)
 
-# ═══════════════════════════════════════════════════════════════════════════════
-#  TAB 4 — ASISTENTE IA  (OpenAI)
-# ═══════════════════════════════════════════════════════════════════════════════
+
+# ─────────────────────────────────────────────
+#  TAB 4 — ASISTENTE IA
+# ─────────────────────────────────────────────
+def evaluar_analisis_local(val_sesgo, val_kurt, n_out, p_value, alpha, decision,
+                            resp_normal, resp_sesgo, resp_outliers):
+    """Evalua el analisis del estudiante localmente sin API."""
+    puntos      = 0
+    comentarios = []
+
+    # 1. Normalidad
+    es_normal_real = abs(val_sesgo) < 0.5 and abs(val_kurt) < 1
+    dijo_normal    = "parece normal" in resp_normal.lower()
+    dijo_no_normal = "no parece" in resp_normal.lower()
+    dijo_seguro    = "no estoy seguro" in resp_normal.lower()
+
+    if es_normal_real and dijo_normal:
+        puntos += 3
+        comentarios.append(("ok", "Normalidad",
+            f"Correcto. Con sesgo = {val_sesgo:.3f} y curtosis = {val_kurt:.3f}, "
+            f"la distribucion se aproxima a la normal (|sesgo| < 0.5 y |curtosis| < 1)."))
+    elif not es_normal_real and dijo_no_normal:
+        puntos += 3
+        comentarios.append(("ok", "Normalidad",
+            f"Correcto. Los valores de sesgo ({val_sesgo:.3f}) o curtosis ({val_kurt:.3f}) "
+            f"indican alejamiento de la normalidad."))
+    elif dijo_seguro:
+        puntos += 1
+        comentarios.append(("warn", "Normalidad",
+            f"Respuesta neutral. Se esperaba una observacion mas definida. "
+            f"El sesgo real es {val_sesgo:.3f} y la curtosis {val_kurt:.3f}."))
+    elif resp_normal.lower() == "sin respuesta":
+        puntos += 0
+        comentarios.append(("err", "Normalidad",
+            "No se proporciono respuesta sobre la normalidad."))
+    else:
+        comentarios.append(("err", "Normalidad",
+            f"Incorrecto. El sesgo real es {val_sesgo:.3f} y la curtosis {val_kurt:.3f}. "
+            f"{'La distribucion si es aproximadamente normal.' if es_normal_real else 'La distribucion no cumple criterios de normalidad.'}"))
+
+    # 2. Sesgo
+    sesgo_real_pos = val_sesgo >  0.5
+    sesgo_real_neg = val_sesgo < -0.5
+    sesgo_real_no  = abs(val_sesgo) <= 0.5
+
+    if sesgo_real_no and "no hay sesgo" in resp_sesgo.lower():
+        puntos += 3
+        comentarios.append(("ok", "Sesgo",
+            f"Correcto. El sesgo de {val_sesgo:.3f} esta dentro del rango simetrico (|sesgo| <= 0.5)."))
+    elif sesgo_real_pos and "positivo" in resp_sesgo.lower():
+        puntos += 3
+        comentarios.append(("ok", "Sesgo",
+            f"Correcto. El sesgo positivo de {val_sesgo:.3f} indica cola hacia la derecha."))
+    elif sesgo_real_neg and "negativo" in resp_sesgo.lower():
+        puntos += 3
+        comentarios.append(("ok", "Sesgo",
+            f"Correcto. El sesgo negativo de {val_sesgo:.3f} indica cola hacia la izquierda."))
+    elif "no puedo" in resp_sesgo.lower():
+        puntos += 1
+        comentarios.append(("warn", "Sesgo",
+            f"Respuesta evasiva. El sesgo real es {val_sesgo:.3f}; "
+            f"es observable directamente en la asimetria del histograma."))
+    elif resp_sesgo.lower() == "sin respuesta":
+        puntos += 0
+        comentarios.append(("err", "Sesgo",
+            "No se proporciono respuesta sobre el sesgo."))
+    else:
+        comentarios.append(("err", "Sesgo",
+            f"Incorrecto. El sesgo real es {val_sesgo:.3f}. "
+            f"Observa hacia que lado se extiende la cola del histograma."))
+
+    # 3. Outliers
+    hay_outliers_real = n_out > 0
+    dijo_si  = "si, hay" in resp_outliers.lower()
+    dijo_no  = "no hay"  in resp_outliers.lower()
+    dijo_pos = "posibles" in resp_outliers.lower()
+
+    if hay_outliers_real and dijo_si:
+        puntos += 2
+        comentarios.append(("ok", "Outliers",
+            f"Correcto. Se detectaron {n_out} valor(es) atipico(s) mediante el criterio IQR."))
+    elif hay_outliers_real and dijo_pos:
+        puntos += 1
+        comentarios.append(("warn", "Outliers",
+            f"Parcialmente correcto. Efectivamente hay {n_out} outlier(s) confirmados por IQR."))
+    elif not hay_outliers_real and dijo_no:
+        puntos += 2
+        comentarios.append(("ok", "Outliers",
+            "Correcto. No se detectaron valores atipicos fuera del rango IQR en el boxplot."))
+    elif not hay_outliers_real and dijo_pos:
+        puntos += 1
+        comentarios.append(("warn", "Outliers",
+            "Precaucion injustificada. No hay outliers confirmados por el criterio IQR."))
+    elif resp_outliers.lower() == "sin respuesta":
+        puntos += 0
+        comentarios.append(("err", "Outliers",
+            "No se proporciono respuesta sobre los outliers."))
+    else:
+        comentarios.append(("err", "Outliers",
+            f"Incorrecto. El numero real de outliers es {n_out}. "
+            f"Revisa los puntos fuera de los bigotes en el boxplot."))
+
+    # 4. Decision prueba Z (siempre correcta porque la calcula el sistema)
+    puntos += 2
+    comentarios.append(("ok", "Decision Z",
+        f"La decision '{decision}' es correcta segun p-value = {p_value:.6f} vs alpha = {alpha}. "
+        f"{'Como p < alpha, se rechaza H0.' if p_value < alpha else 'Como p >= alpha, no se rechaza H0.'}"))
+
+    calificacion = min(10, round(puntos))
+    return comentarios, calificacion
+
+
 with tab4:
-    st.markdown('<p class="slabel">Paso 4</p><h2 class="stitle">Asistente de IA — OpenAI</h2>', unsafe_allow_html=True)
+    st.markdown('<p class="slabel">Paso 4</p><h2 class="stitle">Asistente de IA — Gemini</h2>', unsafe_allow_html=True)
 
     if st.session_state["data"] is None:
         st.warning("Primero carga tus datos y completa la prueba Z.")
@@ -826,7 +923,7 @@ with tab4:
             st.markdown('<p class="note">La IA recibe exclusivamente el resumen estadistico y tu analisis. No recibe los datos crudos.</p>', unsafe_allow_html=True)
             st.markdown("<br>", unsafe_allow_html=True)
 
-            if st.button("Consultar a OpenAI"):
+            if st.button("Consultar a Gemini"):
                 analisis_est = (
                     f"Normalidad: {resp_normal} | "
                     f"Sesgo: {resp_sesgo} | "
@@ -868,41 +965,92 @@ TAREA: Responde en espanol, sin emojis, con parrafos bien separados, maximo 320 
 
                 with st.spinner("Procesando respuesta..."):
                     try:
-                        # ── Llamada a OpenAI ──────────────────────────────
-                        respuesta = openai_client.chat.completions.create(
-                            model="gpt-4o-mini",          # puedes cambiar a gpt-4o si prefieres
-                            max_tokens=600,
-                            temperature=0.4,
-                            messages=[
-                                {
-                                    "role": "system",
-                                    "content": (
-                                        "Eres un profesor universitario de estadistica. "
-                                        "Respondes siempre en espanol, sin emojis, "
-                                        "con lenguaje academico claro y parrafos bien separados."
-                                    ),
-                                },
-                                {"role": "user", "content": prompt},
-                            ],
-                        )
-                        texto_ia = respuesta.choices[0].message.content
-                        # ─────────────────────────────────────────────────
-
+                        resp_ia = gemini_model.generate_content(prompt)
                         st.markdown("<div class='hr'></div>", unsafe_allow_html=True)
-                        st.markdown('<p class="slabel">Retroalimentacion de OpenAI</p>', unsafe_allow_html=True)
+                        st.markdown('<p class="slabel">Retroalimentacion de Gemini</p>', unsafe_allow_html=True)
                         st.markdown(f"""
 <div class="card">
     <div style="font-size:0.9rem;line-height:1.85;color:#c2d5ee;">
-        {texto_ia.replace(chr(10), "<br>")}
+        {resp_ia.text.replace(chr(10), "<br>")}
     </div>
 </div>""", unsafe_allow_html=True)
 
                     except Exception as exc:
-                        st.error(f"Error al conectar con la API de OpenAI: {exc}")
+                        # ── Mensaje de error explicativo ──
+                        st.error(f"Error al conectar con la API de Gemini: {exc}")
+                        st.markdown("""
+<div class="card" style="border-color:rgba(251,191,36,0.35);background:rgba(251,191,36,0.05);margin-top:4px;">
+    <div style="font-family:'DM Mono',monospace;font-size:0.72rem;color:#fbbf24;
+                letter-spacing:0.1em;text-transform:uppercase;margin-bottom:10px;">
+        Error 429 — Cuota de la API agotada
+    </div>
+    <div style="font-size:0.86rem;color:#c2d5ee;line-height:1.8;">
+        La cuenta de Google Gemini utilizada ha alcanzado el limite de solicitudes
+        gratuitas (error 429: Too Many Requests / Quota Exceeded). Esto no afecta
+        el funcionamiento del resto de la aplicacion.<br><br>
+        A continuacion se muestra una <strong style="color:#38bdf8;">evaluacion automatica local</strong>
+        que analiza tu respuesta comparandola con los valores estadisticos reales.
+    </div>
+</div>""", unsafe_allow_html=True)
+
+                        # ── Evaluacion local ──
+                        st.markdown("<div class='hr'></div>", unsafe_allow_html=True)
+                        st.markdown('<p class="slabel">Evaluacion automatica local</p>', unsafe_allow_html=True)
+
+                        comentarios, calificacion = evaluar_analisis_local(
+                            val_sesgo, val_kurt, n_out, p_value, alpha, decision,
+                            resp_normal, resp_sesgo, resp_outliers
+                        )
+
+                        ICONO_MAP = {
+                            "ok":   ("✓", "#34d399", "rgba(52,211,153,0.28)",  "rgba(52,211,153,0.05)"),
+                            "warn": ("~", "#fbbf24", "rgba(251,191,36,0.28)",  "rgba(251,191,36,0.05)"),
+                            "err":  ("✗", "#f87171", "rgba(248,113,113,0.28)", "rgba(248,113,113,0.05)"),
+                        }
+
+                        for tipo_icono, categoria, mensaje in comentarios:
+                            icono, color, borde, bg = ICONO_MAP[tipo_icono]
+                            st.markdown(f"""
+<div class="card-sm" style="border-color:{borde};background:{bg};margin-bottom:10px;">
+    <div style="display:flex;align-items:flex-start;gap:14px;">
+        <div style="font-size:1.15rem;color:{color};margin-top:2px;font-weight:700;">{icono}</div>
+        <div>
+            <div style="font-family:'DM Mono',monospace;font-size:0.69rem;color:{color};
+                        letter-spacing:0.09em;text-transform:uppercase;margin-bottom:5px;">
+                {categoria}
+            </div>
+            <div style="font-size:0.84rem;color:#c2d5ee;line-height:1.65;">{mensaje}</div>
+        </div>
+    </div>
+</div>""", unsafe_allow_html=True)
+
+                        # ── Calificacion final ──
+                        st.markdown("<br>", unsafe_allow_html=True)
+                        col_cal = st.columns([1, 2, 1])
+                        with col_cal[1]:
+                            if calificacion >= 8:
+                                color_cal = "#34d399"
+                                nivel     = "Excelente"
+                            elif calificacion >= 6:
+                                color_cal = "#fbbf24"
+                                nivel     = "Aceptable"
+                            else:
+                                color_cal = "#f87171"
+                                nivel     = "Necesita mejorar"
+
+                            st.markdown(f"""
+<div class="sblock" style="padding:30px 20px;">
+    <div class="sval" style="font-size:2.6rem;color:{color_cal};">{calificacion} / 10</div>
+    <div class="slbl" style="margin-top:10px;">Calificacion del analisis</div>
+    <div style="font-family:'DM Mono',monospace;font-size:0.72rem;color:{color_cal};
+                margin-top:8px;letter-spacing:0.08em;text-transform:uppercase;">
+        {nivel}
+    </div>
+</div>""", unsafe_allow_html=True)
 
     st.markdown("""
 <div class="pgfooter">
     Probabilidad y Estadistica &nbsp;&nbsp;·&nbsp;&nbsp; Ingenieria en Tecnologias de la Informacion<br>
-    Streamlit &nbsp;·&nbsp; OpenAI GPT-4o-mini &nbsp;·&nbsp; SciPy &nbsp;·&nbsp; Seaborn
+    Streamlit &nbsp;·&nbsp; Google Gemini 2.0 &nbsp;·&nbsp; SciPy &nbsp;·&nbsp; Seaborn
 </div>
 """, unsafe_allow_html=True)
